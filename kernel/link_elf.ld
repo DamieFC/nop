@@ -17,9 +17,7 @@ SECTIONS {
 
   .data : {
     *(.data*)
-  }
-
-  .bss : {
+    
     *(COMMON)
     *(.bss*)
   }
