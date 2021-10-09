@@ -35,7 +35,7 @@ void syst_init(void) {
 
 void syst_call(i586_regs_t *regs, idt_hand_t *hand) {
   if (hand->id != IDT_NOP_BASE) {
-    prog_call((int)(hand->data), PROG_TRIG, (uint32_t)(regs), hand->id, 0);
+    prog_call((int)(hand->data), PROG_TRIG, (uint32_t)(regs), hand->id, prog_id);
     return;
   }
   

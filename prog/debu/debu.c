@@ -103,7 +103,19 @@ int nex_start(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint32_t 
     for (int i = 0; i < 32; i++) {
       if (!stack) break;
       
-      printf("- 0x%08X\n", stack[1]);
+      uint32_t phys = (uint32_t)(nop_phys(data_3, stack[1]));
+      
+      if (phys != stack[1]) {
+        char name[5] = {0};
+        size_t size = 0;
+        
+        nop_send(0, "LIST", data_3, (uint32_t)(name), (uint32_t)(&size));
+        
+        printf("- 0x%08X -> 0x%08X(\"%s\", %d bytes)\n", stack[1], phys, name, size);
+      } else {
+        printf("- 0x%08X\n", stack[1]);
+      }
+      
       stack = (void *)(stack[0]);
     }
   }
