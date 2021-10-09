@@ -4,10 +4,9 @@
 #include <stdarg.h>
 #include <string.h>
 
-// #define NOP_DEBUG
+#define NOP_DEBUG
 
 uint16_t dbg_port = 0;
-uint8_t dbg_in_panic = 0;
 
 void dbg_init(uint16_t port) {
 #ifdef NOP_DEBUG
@@ -31,12 +30,8 @@ void dbg_init(uint16_t port) {
 }
 
 void dbg_panic(void) {
-  if (!dbg_in_panic) {
-    dbg_in_panic = 1;
-    
-    // TODO: look for DEBU program, and send message
-    for (;;);
-  }
+  i586_cli();
+  for (;;);
 }
 
 void dbg_putchr(char chr) {  

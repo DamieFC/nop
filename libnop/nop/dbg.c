@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-// #define NOP_DEBUG
+#define NOP_DEBUG
 
 uint16_t dbg_port = 0;
 
@@ -30,12 +30,13 @@ void dbg_init(uint16_t port) {
 }
 
 void dbg_panic(void) {
+  i586_cli();
   for (;;);
 }
 
 void dbg_putchr(char chr) {
 #ifdef NOP_DEBUG
-  if (chr == '\n') {
+  if (chr == '\n') {  
     dbg_putchr('\r');
   }
   

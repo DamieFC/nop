@@ -29,3 +29,9 @@ cd test
   sh build.sh
   mv test.nex ../../root/prog/
 cd ..
+
+# debu.nex: debugger, using TERM(videterm, seriterm, etc.)
+cd debu
+  sh build.sh
+  mv debu.nex ../../root/prog/
+cd ..
