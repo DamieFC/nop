@@ -74,7 +74,7 @@ int     syst_stat(int id, int new_stat); // will only be set if != -1, otherwise
 void    syst_size(int id, size_t size); // resizes file(increase or decrease)
 void    syst_dele(const char *path);
 void   *syst_phys(int id, void *addr);
-int     syst_hook(int id, void *func); // hook up an interrupt handler(pass in the interrupt id)
+int     syst_hook(int id); // hook up an interrupt handler(pass in the interrupt id)
 void    syst_rele(int id); // release an interrupt handler(pass in the handler id)
 
 #endif

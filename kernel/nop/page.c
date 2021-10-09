@@ -2,6 +2,7 @@
 #include <arch/i586.h>
 #include <nop/page.h>
 #include <nop/type.h>
+#include <nop/dbg.h>
 #include <string.h>
 
 uint8_t *page_bitmap = NULL;
@@ -36,6 +37,7 @@ void page_init(tb_mem_t *mem_table) {
   if (!page_bitmap) return;
 
   memset(page_bitmap, 0xFF, bitmap_size);
+  page_used = 0xFFFFFFFF;
 
   for (int i = 0; i < mem_table->count; i++) {
     page_free((void *)(mem_table->table[i].addr), mem_table->table[i].size / PAGE_SIZE);
@@ -69,17 +71,25 @@ void *page_alloc(size_t count) {
   for (uint32_t i = page; i < page + count; i++) {
     page_bitmap[i >> 3] |= 1 << (7 - (i & 7));
   }
-
+  
   page_used += (count * PAGE_SIZE);
-  return (void *)(page * PAGE_SIZE);
+  void *ptr = (void *)(page * PAGE_SIZE);
+  
+  // useless, but ensures that it's detected by UBSAN
+  *((uint8_t *)(ptr)) = 0xAA;
+  
+  return ptr;
 }
 
 void page_free(void *block, size_t count) {
+  // useless, but ensures that it's detected by UBSAN
+  *((uint8_t *)(block)) = 0xAA;
+  
   uint32_t page = (uint32_t)(block) / PAGE_SIZE;
 
   for (uint32_t i = page; i < page + count; i++) {
     page_bitmap[i >> 3] &= ~(1 << (7 - (i & 7)));
   }
-
+  
   page_used -= (count * PAGE_SIZE);
 }

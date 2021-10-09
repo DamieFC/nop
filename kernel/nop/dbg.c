@@ -4,9 +4,13 @@
 #include <stdarg.h>
 #include <string.h>
 
+// #define NOP_DEBUG
+
 uint16_t dbg_port = 0;
+uint8_t dbg_in_panic = 0;
 
 void dbg_init(uint16_t port) {
+#ifdef NOP_DEBUG
   i586_outb(0x00, port + 1);
   i586_outb(0x80, port + 3);
   i586_outb(0x03, port + 0);
@@ -23,19 +27,27 @@ void dbg_init(uint16_t port) {
   
   dbg_port = port;
   i586_outb(0x0F, port + 4);
+#endif
 }
 
 void dbg_panic(void) {
-  for (;;);
+  if (!dbg_in_panic) {
+    dbg_in_panic = 1;
+    
+    // TODO: look for DEBU program, and send message
+    for (;;);
+  }
 }
 
-void dbg_putchr(char chr) {
+void dbg_putchr(char chr) {  
+#ifdef NOP_DEBUG
   if (chr == '\n') {
     dbg_putchr('\r');
   }
   
   while (!(i586_inb(dbg_port + 5) & 0x20));
   i586_outb(chr, dbg_port + 0);
+#endif
 }
 
 void dbg_putstr(const char *str) {

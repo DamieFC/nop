@@ -97,14 +97,13 @@ int nex_start(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint32_t 
     if (data_1 && data_1 < 384) {
       return keys[data_1];
     }
-  } else {
-    dbg_infof("keyb: 0x%08X\n", type);
   }
   
   return 0;
 }
 
 void keyb_hand(i586_regs_t *regs, int id) {
+  while (!(i586_inb(0x64) & 1));
   uint8_t code = i586_inb(0x60);
   
   if (code == 0xF0) {

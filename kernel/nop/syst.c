@@ -97,7 +97,7 @@ void syst_call(i586_regs_t *regs, idt_hand_t *hand) {
       regs->eax = (uint32_t)(syst_phys(regs->ebx, (void *)(regs->ecx)));
       break;
     case SYST_HOOK:
-      regs->eax = (uint32_t)(syst_hook(regs->ebx, (void *)(regs->ecx)));
+      regs->eax = (uint32_t)(syst_hook(regs->ebx));
       break;
     case SYST_RELE:
       syst_rele(regs->ebx);
@@ -122,12 +122,14 @@ int syst_load(const char *path) {
   
   for (int i = 0; i < PROG_MAX; i++) {
     if (prog_arr[i].free) {
-      size_t size = (fat_size(part, cluster) * fat_parts[part].boot.cluster_size) << 9;
+      // size_t size = (fat_size(part, cluster) * fat_parts[part].boot.cluster_size) << 9;
       
-      prog_arr[i].buffer = (void *)(page_alloc((size + 0x0FFF) >> 12));
-      prog_arr[i].size = size;
+      prog_arr[i].buffer = (void *)(page_alloc((node.size + 0x0FFF) >> 12));
+      prog_arr[i].size = node.size;
       prog_arr[i].free = 0;
       prog_arr[i].tick = 0;
+      
+      dbg_infof("syst: %d: buffer 0x%08X, size 0x%08X\n", prog_id, prog_arr[i].buffer, prog_arr[i].size);
       
       if (!prog_arr[i].buffer) {
         dbg_failf("syst: cannot allocate space for program: '%s'\n", path);
@@ -260,7 +262,7 @@ void syst_clos(int id) {
   if (id <= 0 || id > SYST_OPEN_MAX) return;
   if (syst_files[id - 1].free) return;
   
-  page_free(syst_files[id - 1].buffer, (syst_files[id - 1].size + 0x01FF) >> 12);
+  page_free(syst_files[id - 1].buffer, (syst_files[id - 1].size + 0x0FFF) >> 12);
   syst_files[id - 1].free = 1;
 }
 
@@ -353,7 +355,7 @@ void *syst_phys(int id, void *addr) {
   return (void *)(((uint32_t)(addr) - VIRT_NOP_PROG) + (uint32_t)(prog_arr[id - 1].buffer));
 }
 
-int syst_hook(int id, void *func) {
+int syst_hook(int id) {
   idt_hand_t hand = (idt_hand_t){
     syst_call,
     (void *)(prog_id),

@@ -30,6 +30,7 @@
 #define dbg_failf(...) dbg_printf(DBG_BOLD DBG_WHITE "[" DBG_LIGHT_RED   "FAIL" DBG_WHITE "] " DBG_NORMAL DBG_LIGHT_GRAY __VA_ARGS__)
 
 extern uint16_t dbg_port;
+extern uint8_t dbg_in_panic;
 
 void dbg_init(uint16_t port);
 void dbg_panic(void);

@@ -292,6 +292,10 @@ i586_inb:
   push edx
   mov edx, [esp + 4 + 4]
   in al, dx
+  
+  mov dx, 0x0080
+  out dx, al
+  
   pop edx
   ret
 
@@ -314,6 +318,10 @@ i586_outb:
   mov eax, [esp + 32 + 4]
   mov edx, [esp + 32 + 8]
   out dx, al
+  
+  mov dx, 0x0080
+  out dx, al
+  
   popad
   ret
 
