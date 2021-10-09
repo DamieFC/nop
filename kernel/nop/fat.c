@@ -68,6 +68,25 @@ void fat_init(void) {
       }
     }
   }
+  
+  // check where is the kernel located
+  uint8_t buffer[512];
+  
+  for (int i = 0; i < fat_count; i++) {
+    if (!ata_read(fat_parts[i].drive, fat_parts[i].start, buffer, 1)) {
+      continue;
+    } else if (memcmp((void *)(buffer), (void *)(0x00007C00), 512)) {
+      continue;
+    }
+    
+    dbg_infof("fat: booted from partition %d\n", i);
+    
+    fat_t tmp = fat_parts[0];
+    fat_parts[0] = fat_parts[i];
+    fat_parts[i] = tmp;
+    
+    break;
+  }
 }
 
 uint64_t fat_lba(int part, uint32_t cluster) {
