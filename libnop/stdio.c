@@ -36,7 +36,7 @@ int fputc(int chr, FILE *file) {
 }
 
 int fputs_opt(const char *str, FILE *file, int pad_aln, int pad_len, char pad_chr) {
-  int length = strlen(str);
+  int length = strlen(str) + 1;
 
   if (pad_aln) {
     while (pad_len >= length) {

@@ -168,7 +168,9 @@ start_32:
 
   push dword video_table
   push dword mem_table
-
+  
+  xor ebp, ebp
+  
   movzx edi, word [boot_addr]
   shl edi, 4
   call edi
