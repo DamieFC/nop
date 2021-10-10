@@ -4,6 +4,27 @@
 
 #include "font.h"
 
+// https://lospec.com/palette-list/cgarne
+
+const uint32_t colors[] = {
+  0xFF000000,
+  0xFF2234D1,
+  0xFF0C7E45,
+  0xFF44AACC,
+  0xFF8A3622,
+  0xFF5C2E78,
+  0xFFAA5C3D,
+  0xFFB5B5B5,
+  0xFF5E606E,
+  0xFF4C81FB,
+  0xFF6CD947,
+  0xFF7BE2F9,
+  0xFFEB8A60,
+  0xFFE23D69,
+  0xFFFFD93F,
+  0xFFFFFFFF 
+};
+
 uint16_t width, height;
 uint8_t bpp;
 
@@ -15,8 +36,8 @@ int blink_state = 0;
 int cursor_x = 0;
 int cursor_y = 0;
 
-uint32_t fore_color = 0xFFDFDFDF;
-uint32_t back_color = 0xFF1F1F1F;
+uint32_t fore_color;
+uint32_t back_color;
 
 char key_buffer[64];
 
@@ -41,6 +62,9 @@ int nex_start(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint32_t 
     
     nop_send(vide, "INFO", (uint32_t)(&width), (uint32_t)(&height), (uint32_t)(&bpp));
     if (bpp != 32) return 0;
+    
+    fore_color = colors[15];
+    back_color = colors[0];
     
     nop_send(0, "TIME", 0, 1, 0);
     nop_send(vide, "RECT", 0, width + (height << 16), back_color);
