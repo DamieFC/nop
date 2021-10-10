@@ -1,5 +1,6 @@
 #include <nop/send.h>
 #include <nop/type.h>
+#include <nop/dbg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -65,6 +66,13 @@ void *malloc(size_t size) {
   return NULL;
 }
 
+void *calloc(size_t count, size_t size) {
+  void *ptr = malloc(count * size);
+  memset(ptr, 0, count * size);
+  
+  return ptr;
+}
+
 void *realloc(void *ptr, size_t new_size) {
   if (!new_size) return NULL;
 
@@ -87,4 +95,24 @@ void free(void *ptr) {
 
   mem_used -= node->size;
   mem_defrag();
+}
+
+int atoi(const char *str) {
+  int value = 0;
+  
+  while (*str) {
+    if (*str < '0' || *str > '9') break;
+    value = (value * 10) + (*(str++) - '0');
+  }
+  
+  return value;
+}
+
+int system(const char *cmd) {
+  return 0;
+}
+
+void exit(int value) {
+  dbg_panic("called exit()");
+  for (;;);
 }

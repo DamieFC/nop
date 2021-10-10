@@ -95,3 +95,8 @@ void __ubsan_handle_vla_bound_not_positive(ub_vla_t *data) {
   
   dbg_panic("ubsan array of negative size");
 }
+
+void __ubsan_handle_nonnull_arg() {
+  dbg_failf("ubsan: passed NULL argument\n");
+  dbg_panic("ubsan passed NULL argument");
+}

@@ -1,6 +1,8 @@
 #include <arch/i586.h>
 #include <nop/type.h>
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 void *memcpy(void *dest, const void *src, size_t size) {
   i586_rep_movsd((uint32_t)(size >> 2), dest, src);
@@ -58,3 +60,74 @@ int strcmp(const char *str_1, const char *str_2) {
 
   return (int)(*str_1) - (int)(*str_2);
 }
+
+int strncmp(const char *str_1, const char *str_2, size_t size) {
+  if (!size) return 0;
+  
+  while (*str_1 && size > 1) {
+    if (*str_1 != *str_2) break;
+    
+    str_1++, str_2++;
+    size--;
+  }
+
+  return (int)(*str_1) - (int)(*str_2);
+}
+
+char *strchr(const char *str, int val) {
+  while (*str) {
+    if (*str == (char)(val)) break;
+    str++;
+  }
+  
+  return str;
+}
+
+char *strrchr(const char *str, int val) {
+  char *last = str + strlen(str);
+  
+  while (*str) {
+    if (*str == (char)(val)) {
+      last = str;
+    }
+    
+    str++;
+  }
+  
+  return last;
+}
+
+char *strstr(const char *str_1, const char *str_2) {
+  // TODO: do this
+  return str_1 + strlen(str_1);
+}
+
+char *strdup(const char *str) {
+  char *new_str = malloc(strlen(str) + 1);
+  strcpy(new_str, str);
+  
+  return new_str;
+}
+
+int strcasecmp(const char *str_1, const char *str_2) {
+  while (*str_1) {
+    if (toupper(*str_1) != toupper(*str_2)) break;
+    str_1++, str_2++;
+  }
+
+  return (int)(toupper(*str_1)) - (int)(toupper(*str_2));
+}
+
+int strncasecmp(const char *str_1, const char *str_2, size_t size) {
+  if (!size) return 0;
+  
+  while (*str_1 && size > 1) {
+    if (toupper(*str_1) != toupper(*str_2)) break;
+    
+    str_1++, str_2++;
+    size--;
+  }
+
+  return (int)(toupper(*str_1)) - (int)(toupper(*str_2));
+}
+

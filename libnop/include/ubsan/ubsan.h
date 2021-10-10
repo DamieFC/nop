@@ -61,4 +61,6 @@ void __ubsan_handle_type_mismatch_v1(ub_mismatch_t *data, void *ptr);
 
 void __ubsan_handle_vla_bound_not_positive(ub_vla_t *data);
 
+void __ubsan_handle_nonnull_arg();
+
 #endif

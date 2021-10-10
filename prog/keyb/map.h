@@ -28,6 +28,8 @@
 #define KEY_ENTER     '\n'
 #define KEY_TAB       '\t'
 
+#define keyb_map keyb_map_en
+
 const int keyb_map_en[] = {
   // default
   KEY_NONE,     KEY_F9,      KEY_NONE,      KEY_F5,
@@ -135,7 +137,7 @@ const int keyb_map_en[] = {
   KEY_NONE,     KEY_NONE,    KEY_NONE,      KEY_F7
 };
 
-const int keyb_map[] = {
+const int keyb_map_es[] = {
   // default
   KEY_NONE,     KEY_F9,      KEY_NONE,      KEY_F5,
   KEY_F3,       KEY_F1,      KEY_F2,        KEY_F12,

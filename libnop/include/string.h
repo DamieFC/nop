@@ -23,4 +23,7 @@ char   *strrchr(const char *str, int val);
 char   *strstr(const char *str_1, const char *str_2);
 char   *strdup(const char *str);
 
+int strcasecmp(const char *str_1, const char *str_2);
+int strncasecmp(const char *str_1, const char *str_2, size_t size);
+
 #endif

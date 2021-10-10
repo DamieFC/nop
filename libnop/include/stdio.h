@@ -49,7 +49,14 @@ int fputn_opt(int num, int base, int upper, FILE *file, int pad_aln, int pad_len
 
 int vfprintf(FILE *file, const char *format, va_list args);
 int fprintf(FILE *file, const char *format, ...);
+
+size_t sputs_opt(char *buffer, const char *str, int pad_aln, int pad_len, char pad_chr);
+size_t sputn_opt(char *buffer, int num, int base, int upper, int pad_aln, int pad_len, char pad_chr);
+
+int vsnprintf(char *buffer, size_t size, const char *format, va_list args);
 int snprintf(char *buffer, size_t size, const char *format, ...);
+
+int sscanf(const char *str, const char *format, ...);
 
 FILE *fopen(const char *path, const char *mode);
 int   fclose(FILE *file);
