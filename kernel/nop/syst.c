@@ -342,7 +342,7 @@ void syst_size(int id, size_t size) {
   
   dbg_failf("syst: %d: SIZE not implemented\n", prog_id);
   dbg_panic("SIZE not implemented");
-}
+} 
 
 void syst_dele(const char *path) {
   // TODO: implement DELE

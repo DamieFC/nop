@@ -99,10 +99,7 @@ int fputn_opt(int num, int base, int upper, FILE *file, int pad_aln, int pad_len
   return fputs_opt(buffer + offset, file, pad_aln, pad_len, pad_chr);
 }
 
-int fprintf(FILE *file, const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-
+int vfprintf(FILE *file, const char *format, va_list args) {
   while (*format) {
     if (*format == '%') {
       format++;
@@ -176,4 +173,11 @@ int fprintf(FILE *file, const char *format, ...) {
   }
   
   return 1;
+}
+
+int fprintf(FILE *file, const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  
+  return vfprintf(file, format, args);
 }

@@ -23,6 +23,11 @@ cd prog
   sh build.sh
 cd ..
 
+# Build ports
+cd ports
+  sh build.sh
+cd ..
+
 # Generate the image
 mkdir -p mnt
 dd if=/dev/zero of=nop.img count=131072
