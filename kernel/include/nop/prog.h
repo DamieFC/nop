@@ -20,7 +20,7 @@ struct prog_t {
   void *buffer, *start;
   uint32_t size;
   
-  int free, tick;
+  int free, pause, tick;
 };
 
 extern prog_t *prog_arr;

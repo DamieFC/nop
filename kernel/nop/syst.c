@@ -173,10 +173,12 @@ void syst_kill(int id) {
 }
 
 void syst_paus(int id, int pause) {
-  // TODO: implement PAUS
+  if (id <= 0 || id > PROG_MAX) {
+    id = prog_id;
+  }
   
-  dbg_failf("syst: %d: PAUS not implemented\n", prog_id);
-  dbg_panic("PAUS not implemented");
+  dbg_infof("syst: %d: set pause of %d to %d\n", prog_id, id, pause);
+  prog_arr[id - 1].pause = pause;
 }
 
 int syst_list(int id, char *name, size_t *size) {

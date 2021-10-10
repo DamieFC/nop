@@ -37,7 +37,9 @@ int prog_push(prog_t prog) {
   for (int i = 0; i < PROG_MAX; i++) {
     if (prog_arr[i].free) {
       prog_arr[i] = prog;
+      
       prog_arr[i].free = 0;
+      prog_arr[i].pause = 0;
       
       return i + 1;
     }
@@ -51,7 +53,7 @@ uint32_t prog_call(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint
     return 0;
   }
   
-  if (prog_arr[id - 1].free) {
+  if (prog_arr[id - 1].free || prog_arr[id - 1].pause) {
     return 0;
   }
   
