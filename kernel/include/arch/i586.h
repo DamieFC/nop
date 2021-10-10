@@ -61,4 +61,6 @@ extern void i586_cli(void);
 
 extern void i586_lidt(const void *edi);
 
+extern void i586_panic(const char *msg);
+
 #endif

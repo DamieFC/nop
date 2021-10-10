@@ -28,8 +28,8 @@ void nop(tb_mem_t *mem_table, tb_vid_t *vid_table) {
   int init_id = syst_open("0:/syst/init.txt");
   
   if (init_id <= 0 || init_id > SYST_OPEN_MAX) {
-    dbg_failf("could not open 0:/syst/init.txt\n");
-    dbg_panic();
+    dbg_failf("cannot open 0:/syst/init.txt\n");
+    dbg_panic("cannot open init file");
   }
   
   char prog_buf[FAT_PATH_MAX];
@@ -47,8 +47,8 @@ void nop(tb_mem_t *mem_table, tb_vid_t *vid_table) {
         int new_id = syst_load(prog_buf);
       
         if (new_id <= 0 || new_id > SYST_OPEN_MAX) {
-          dbg_failf("could not open %s\n", prog_buf);
-          dbg_panic();
+          dbg_failf("cannot open %s\n", prog_buf);
+          dbg_panic("cannot load program");
         }
         
         prog_call(new_id, PROG_INIT, (uint32_t)(vid_table), 0, 0);

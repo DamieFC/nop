@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#define NOP_DEBUG
+// #define NOP_DEBUG
 
 uint16_t dbg_port = 0;
 
@@ -21,7 +21,7 @@ void dbg_init(uint16_t port) {
   i586_outb(0xAE, port + 0);
 
   if (i586_inb(port + 0) != 0xAE) {
-    dbg_panic();
+    dbg_panic("cannot initialize debug port");
   }
   
   dbg_port = port;
@@ -29,7 +29,9 @@ void dbg_init(uint16_t port) {
 #endif
 }
 
-void dbg_panic(void) {
+void dbg_panic(const char *msg) {
+  i586_panic(msg);
+  
   i586_cli();
   for (;;);
 }

@@ -35,3 +35,9 @@ cd debu
   sh build.sh
   mv debu.nex ../../root/prog/
 cd ..
+
+# ansi.nex: ANSI escape code test, using TERM(videterm, seriterm, etc.)
+cd ansi
+  sh build.sh
+  mv ansi.nex ../../root/prog/
+cd ..

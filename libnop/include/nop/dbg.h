@@ -32,7 +32,7 @@
 extern uint16_t dbg_port;
 
 void dbg_init(uint16_t port);
-void dbg_panic(void);
+void dbg_panic(const char *msg);
 
 void dbg_putchr(char chr);
 void dbg_putstr(const char *str);

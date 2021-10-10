@@ -27,6 +27,9 @@ extern prog_t *prog_arr;
 extern size_t prog_idx;
 extern int prog_id;
 
+extern int prog_stk[];
+extern int prog_len;
+
 void     prog_init(void);
 int      prog_push(prog_t prog);
 uint32_t prog_call(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint32_t data_3);

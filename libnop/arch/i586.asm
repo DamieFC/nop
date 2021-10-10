@@ -52,6 +52,8 @@ global i586_cli
 
 global i586_lidt
 
+global i586_panic
+
 global i586_send
 
 ; Implementations(see i586/instr.h for more info):
@@ -385,6 +387,11 @@ i586_lidt:
   dw 0x0800
 .idt:
   dd 0x00000000
+  
+i586_panic:
+  mov edi, [esp + 4]
+  int 0x31
+  ret
   
 i586_send:
   push ebx

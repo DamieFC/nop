@@ -28,7 +28,7 @@ int nex_start(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint32_t 
     
     if (!hand) {
       dbg_failf("keyb: cannot hook up handler\n");
-      dbg_panic();
+      dbg_panic("cannot hook up handler");
     }
     
     i586_outb(0xAD, 0x64); // disable port 1

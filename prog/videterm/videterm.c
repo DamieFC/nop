@@ -1,5 +1,6 @@
 #include <nop/send.h>
 #include <nop/type.h>
+#include <nop/dbg.h>
 #include <string.h>
 
 #include "font.h"
@@ -8,21 +9,21 @@
 
 const uint32_t colors[] = {
   0xFF000000,
-  0xFF2234D1,
-  0xFF0C7E45,
-  0xFF44AACC,
   0xFF8A3622,
-  0xFF5C2E78,
+  0xFF0C7E45,
   0xFFAA5C3D,
+  0xFF2234D1,
+  0xFF5C2E78,
+  0xFF44AACC,
   0xFFB5B5B5,
   0xFF5E606E,
-  0xFF4C81FB,
-  0xFF6CD947,
-  0xFF7BE2F9,
   0xFFEB8A60,
-  0xFFE23D69,
+  0xFF6CD947,
   0xFFFFD93F,
-  0xFFFFFFFF 
+  0xFF4C81FB,
+  0xFFE23D69,
+  0xFF7BE2F9,
+  0xFFFFFFFF
 };
 
 uint16_t width, height;
@@ -46,6 +47,9 @@ int key_offset_r = 0;
 
 int echo = 0;
 
+int underline = 0;
+int reverse = 0;
+
 char ansi_buffer[16];
 int ansi_length = 0;
 
@@ -54,6 +58,8 @@ void term_putchar(char c);
 __attribute__((__section__(".entry"), __used__))
 int nex_start(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint32_t data_3) {
   if (type == nop_type("INIT")) {
+    dbg_init(0x03F8);
+    
     vide = nop_find("VIDE");
     if (!vide) return 0;
     
@@ -67,7 +73,7 @@ int nex_start(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint32_t 
     back_color = colors[0];
     
     nop_send(0, "TIME", 0, 1, 0);
-    nop_send(vide, "RECT", 0, width + (height << 16), back_color);
+    nop_send(vide, "RECT", 0, width + (height << 16), colors[0]);
     
     nop_send(keyb, "HOOK", 0, 0, 0);
   } else if (type == nop_type("WRIT")) {
@@ -131,14 +137,49 @@ void term_putchar(char c) {
   if (ansi_length || c == '\x1B') {
     ansi_buffer[ansi_length++] = c;
     
-    if (c >= 'A' && c <= 'Z') {
+    if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
       ansi_buffer[ansi_length] = '\0';
       
-      if (!strcmp(ansi_buffer, "\x1B[2J")) {
-        cursor_x = 0;
-        cursor_y = 0;
-        
-        nop_send(vide, "RECT", 0, width + (height << 16), back_color);
+      if (ansi_length > 2) {
+        if (ansi_buffer[0] == '\x1B' && ansi_buffer[1] == '[') {
+          if (!strcmp(ansi_buffer, "\x1B[2J")) {
+            cursor_x = 0;
+            cursor_y = 0;
+            
+            nop_send(vide, "RECT", 0, width + (height << 16), colors[0]);
+          } else if (ansi_buffer[ansi_length - 1] == 'm') {
+            int num = 0;
+            
+            for (int i = 2; i < ansi_length - 1; i++) {
+              num *= 10;
+              num += (ansi_buffer[i] - '0');
+            }
+            
+            if (num == 0) {
+              underline = 0;
+              reverse = 0;
+              
+              fore_color = colors[15];
+              back_color = colors[0];
+            } else if (num == 4) {
+              underline = 1;
+            } else if (num == 7) {
+              reverse = 1;
+            } else if (num >= 30 && num <= 37) {
+              fore_color = colors[num - 30];
+            } else if (num == 39) {
+              fore_color = colors[15];
+            } else if (num >= 90 && num <= 97) {
+              fore_color = colors[num - 82];
+            } else if (num >= 40 && num <= 47) {
+              back_color = colors[num - 40];
+            } else if (num == 49) {
+              back_color = colors[0];
+            } else if (num >= 100 && num <= 107) {
+              back_color = colors[num - 92];
+            }
+          }
+        }
       }
       
       ansi_length = 0;
@@ -151,7 +192,7 @@ void term_putchar(char c) {
     nop_send(vide, "RECT",
              (cursor_x * 8 * font_scale_x) + (((cursor_y * font_height + (font_height - 1)) * font_scale_y) << 16),
              (8 * font_scale_x) + ((1 * font_scale_y) << 16),
-             back_color
+             colors[0]
     );
   }
   
@@ -171,7 +212,7 @@ void term_putchar(char c) {
       cursor_y--;
       
       nop_send(vide, "SCRO", font_height * font_scale_y, 0, 0);
-      nop_send(vide, "RECT", (height - (font_height * font_scale_y)) << 16, width + ((font_height * font_scale_y) << 16), back_color);
+      nop_send(vide, "RECT", (height - (font_height * font_scale_y)) << 16, width + ((font_height * font_scale_y) << 16), colors[0]);
     }
     
     blink_state = 0;
@@ -193,7 +234,17 @@ void term_putchar(char c) {
     uint8_t line[(bpp >> 3) * 8 * font_scale_x];
     
     for (int x = 0; x < 8; x++) {
-      uint32_t color = ((byte >> (7 - x)) & 1) ? fore_color : back_color;
+      uint32_t color;
+      
+      if (reverse) {
+        color = ((byte >> (7 - x)) & 1) ? back_color : fore_color;
+      } else {
+        color = ((byte >> (7 - x)) & 1) ? fore_color : back_color;
+      }
+      
+      if (underline && y >= (font_height - 1) * font_scale_y && (x + y) % 2) {
+        color = reverse ? back_color : fore_color;
+      }
 
       for (size_t sx = 0; sx < font_scale_x; sx++) {
         memcpy(buffer + (sx + x * font_scale_x) * (bpp >> 3) + y * ((bpp >> 3) * 8 * font_scale_x), &color, (bpp >> 3));

@@ -10,6 +10,9 @@ prog_t *prog_arr = NULL;
 size_t prog_idx = 0;
 int prog_id = 0;
 
+int prog_stk[PROG_MAX] = {0};
+int prog_len = 0;
+
 void prog_init(void) {
   prog_arr = mem_alloc(PROG_MAX * sizeof(prog_t));
   
@@ -57,6 +60,8 @@ uint32_t prog_call(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint
   int old_id = prog_id;
   prog_id = id;
   
+  prog_stk[prog_len++] = prog_id;
+  
   // TODO: make faster by allocating virtual memory maps!
   
   virt_map(virt_table, prog_arr[id - 1].buffer, (void *)(VIRT_NOP_PROG), VIRT_WRITE, (prog_arr[id - 1].size + 0x0FFF) >> 12);
@@ -74,7 +79,9 @@ uint32_t prog_call(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint
   
   virt_load(virt_table);
   
+  prog_len--;
   prog_id = old_id;
+  
   return value;
 }
 

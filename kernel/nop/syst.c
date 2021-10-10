@@ -17,7 +17,7 @@ void syst_init(void) {
   
   if (!syst_files) {
     dbg_failf("syst: cannot allocate file table\n");
-    dbg_panic();
+    dbg_panic("cannot allocate file table");
   }
   
   for (int i = 0; i < SYST_OPEN_MAX; i++) {
@@ -102,6 +102,9 @@ void syst_call(i586_regs_t *regs, idt_hand_t *hand) {
     case SYST_RELE:
       syst_rele(regs->ebx);
       break;
+    case SYST_STAC:
+      regs->eax = (uint32_t)(syst_stac((void *)(regs->ebx)));
+      break;
   }
 }
 
@@ -133,7 +136,7 @@ int syst_load(const char *path) {
       
       if (!prog_arr[i].buffer) {
         dbg_failf("syst: cannot allocate space for program: '%s'\n", path);
-        dbg_panic();
+        dbg_panic("cannot allocate program buffer");
       }
       
       fat_load_chain(part, prog_arr[i].buffer, cluster);
@@ -141,7 +144,7 @@ int syst_load(const char *path) {
       
       if (nex_header[0] != 0x2158454E) {
         dbg_failf("syst: file is not a NEX program: '%s'\n", path);
-        dbg_panic();
+        dbg_panic("file is not a NEX program");
       }
       
       prog_arr[i].start = (void *)(VIRT_NOP_PROG + 8);
@@ -173,7 +176,7 @@ void syst_paus(int id, int pause) {
   // TODO: implement PAUS
   
   dbg_failf("syst: %d: PAUS not implemented\n", prog_id);
-  dbg_panic();
+  dbg_panic("PAUS not implemented");
 }
 
 int syst_list(int id, char *name, size_t *size) {
@@ -243,7 +246,7 @@ int syst_open(const char *path) {
       
       if (!syst_files[i].buffer) {
         dbg_failf("syst: cannot allocate space for file: '%s'\n", path);
-        dbg_panic();
+        dbg_panic("cannot allocate file buffer");
       }
       
       fat_load_chain(part, syst_files[i].buffer, cluster);
@@ -286,7 +289,7 @@ size_t syst_writ(int id, void *buffer, size_t size) {
   // TODO: implement WRIT
   
   dbg_failf("syst: %d: WRIT not implemented\n", prog_id);
-  dbg_panic();
+  dbg_panic("WRIT not implemented");
   
   return 0; // does nothing!
 }
@@ -336,14 +339,14 @@ void syst_size(int id, size_t size) {
   // TODO: implement SIZE
   
   dbg_failf("syst: %d: SIZE not implemented\n", prog_id);
-  dbg_panic();
+  dbg_panic("SIZE not implemented");
 }
 
 void syst_dele(const char *path) {
   // TODO: implement DELE
   
   dbg_failf("syst: %d: DELE not implemented\n", prog_id);
-  dbg_panic();
+  dbg_panic("DELE not implemented");
 }
 
 void *syst_phys(int id, void *addr) {
@@ -375,4 +378,9 @@ void syst_rele(int id) {
   
   if (!id) return;
   idt_remove((size_t)(id - 1));
+}
+
+void *syst_stac(int *length) {
+  *length = prog_len;
+  return prog_stk;
 }
