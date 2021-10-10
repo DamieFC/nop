@@ -76,9 +76,4 @@ void idt_call(i586_regs_t *regs, int id) {
       idt_hand[i].func(regs, idt_hand + i);
     }
   }
-
-  if (id < IDT_PIC_BASE) {
-    dbg_failf("idt: unhandled interrupt %d\n", id);
-    dbg_panic();
-  }
 }

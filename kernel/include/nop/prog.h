@@ -20,12 +20,15 @@ struct prog_t {
   void *buffer, *start;
   uint32_t size;
   
-  int free, tick;
+  int free, pause, tick;
 };
 
 extern prog_t *prog_arr;
 extern size_t prog_idx;
 extern int prog_id;
+
+extern int prog_stk[];
+extern int prog_len;
 
 void     prog_init(void);
 int      prog_push(prog_t prog);

@@ -10,6 +10,9 @@ prog_t *prog_arr = NULL;
 size_t prog_idx = 0;
 int prog_id = 0;
 
+int prog_stk[PROG_MAX] = {0};
+int prog_len = 0;
+
 void prog_init(void) {
   prog_arr = mem_alloc(PROG_MAX * sizeof(prog_t));
   
@@ -34,7 +37,9 @@ int prog_push(prog_t prog) {
   for (int i = 0; i < PROG_MAX; i++) {
     if (prog_arr[i].free) {
       prog_arr[i] = prog;
+      
       prog_arr[i].free = 0;
+      prog_arr[i].pause = 0;
       
       return i + 1;
     }
@@ -48,7 +53,7 @@ uint32_t prog_call(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint
     return 0;
   }
   
-  if (prog_arr[id - 1].free) {
+  if (prog_arr[id - 1].free || prog_arr[id - 1].pause) {
     return 0;
   }
   
@@ -57,12 +62,16 @@ uint32_t prog_call(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint
   int old_id = prog_id;
   prog_id = id;
   
+  prog_stk[prog_len++] = prog_id;
+  
   // TODO: make faster by allocating virtual memory maps!
   
   virt_map(virt_table, prog_arr[id - 1].buffer, (void *)(VIRT_NOP_PROG), VIRT_WRITE, (prog_arr[id - 1].size + 0x0FFF) >> 12);
   virt_load(virt_table);
   
   uint32_t value = func(old_id, type, data_1, data_2, data_3);
+  
+  virt_unmap(virt_table, (void *)(VIRT_NOP_PROG), (prog_arr[id - 1].size + 0x0FFF) >> 12);
   
   if (old_id) {
     virt_map(virt_table, prog_arr[old_id - 1].buffer, (void *)(VIRT_NOP_PROG), VIRT_WRITE, (prog_arr[old_id - 1].size + 0x0FFF) >> 12);
@@ -72,7 +81,9 @@ uint32_t prog_call(int id, uint32_t type, uint32_t data_1, uint32_t data_2, uint
   
   virt_load(virt_table);
   
+  prog_len--;
   prog_id = old_id;
+  
   return value;
 }
 

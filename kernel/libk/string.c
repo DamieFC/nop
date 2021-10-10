@@ -1,16 +1,27 @@
 #include <arch/i586.h>
 #include <nop/type.h>
+#include <nop/dbg.h>
 #include <string.h>
 
 void *memcpy(void *dest, const void *src, size_t size) {
+  if (!size) return dest;
+  
   i586_rep_movsd((uint32_t)(size >> 2), dest, src);
   i586_rep_movsb((uint32_t)(size & 3), dest + (size & 0xFFFFFFFC), src + (size & 0xFFFFFFFC));
+
+  // useless, but ensures that it's detected by UBSAN
+  *((uint8_t *)(dest)) = *((uint8_t *)(src));
 
   return dest;
 }
 
 void *memset(void *ptr, int val, size_t size) {
+  if (!size) return ptr;
+  
   i586_rep_stosb((uint8_t)(val), (uint32_t)(size), ptr);
+  
+  // useless, but ensures that it's detected by UBSAN
+  *((uint8_t *)(ptr)) = val;
 
   return ptr;
 }
@@ -28,6 +39,9 @@ int memcmp(const char *str_1, const char *str_2, size_t size) {
 }
 
 size_t strlen(const char *str) {
+  // useless, but ensures that it's detected by UBSAN
+  if (!(*str)) return 0;
+  
   return (i586_repne_scasb(0, 0xFFFFFFFF, str) - (void *)(str)) - 1;
 }
 

@@ -1,3 +1,5 @@
+0:/prog/debu.nex
+
 0:/prog/vide.nex
 0:/prog/keyb.nex
 

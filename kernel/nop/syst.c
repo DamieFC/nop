@@ -17,7 +17,7 @@ void syst_init(void) {
   
   if (!syst_files) {
     dbg_failf("syst: cannot allocate file table\n");
-    dbg_panic();
+    dbg_panic("cannot allocate file table");
   }
   
   for (int i = 0; i < SYST_OPEN_MAX; i++) {
@@ -35,7 +35,7 @@ void syst_init(void) {
 
 void syst_call(i586_regs_t *regs, idt_hand_t *hand) {
   if (hand->id != IDT_NOP_BASE) {
-    prog_call((int)(hand->data), PROG_TRIG, (uint32_t)(regs), hand->id, 0);
+    prog_call((int)(hand->data), PROG_TRIG, (uint32_t)(regs), hand->id, prog_id);
     return;
   }
   
@@ -97,10 +97,13 @@ void syst_call(i586_regs_t *regs, idt_hand_t *hand) {
       regs->eax = (uint32_t)(syst_phys(regs->ebx, (void *)(regs->ecx)));
       break;
     case SYST_HOOK:
-      regs->eax = (uint32_t)(syst_hook(regs->ebx, (void *)(regs->ecx)));
+      regs->eax = (uint32_t)(syst_hook(regs->ebx));
       break;
     case SYST_RELE:
       syst_rele(regs->ebx);
+      break;
+    case SYST_STAC:
+      regs->eax = (uint32_t)(syst_stac((void *)(regs->ebx)));
       break;
   }
 }
@@ -122,16 +125,18 @@ int syst_load(const char *path) {
   
   for (int i = 0; i < PROG_MAX; i++) {
     if (prog_arr[i].free) {
-      size_t size = (fat_size(part, cluster) * fat_parts[part].boot.cluster_size) << 9;
+      // size_t size = (fat_size(part, cluster) * fat_parts[part].boot.cluster_size) << 9;
       
-      prog_arr[i].buffer = (void *)(page_alloc((size + 0x0FFF) >> 12));
-      prog_arr[i].size = size;
+      prog_arr[i].buffer = (void *)(page_alloc((node.size + 0x0FFF) >> 12));
+      prog_arr[i].size = node.size;
       prog_arr[i].free = 0;
       prog_arr[i].tick = 0;
       
+      dbg_infof("syst: %d: buffer 0x%08X, size 0x%08X\n", prog_id, prog_arr[i].buffer, prog_arr[i].size);
+      
       if (!prog_arr[i].buffer) {
         dbg_failf("syst: cannot allocate space for program: '%s'\n", path);
-        dbg_panic();
+        dbg_panic("cannot allocate program buffer");
       }
       
       fat_load_chain(part, prog_arr[i].buffer, cluster);
@@ -139,7 +144,7 @@ int syst_load(const char *path) {
       
       if (nex_header[0] != 0x2158454E) {
         dbg_failf("syst: file is not a NEX program: '%s'\n", path);
-        dbg_panic();
+        dbg_panic("file is not a NEX program");
       }
       
       prog_arr[i].start = (void *)(VIRT_NOP_PROG + 8);
@@ -168,10 +173,12 @@ void syst_kill(int id) {
 }
 
 void syst_paus(int id, int pause) {
-  // TODO: implement PAUS
+  if (id <= 0 || id > PROG_MAX) {
+    id = prog_id;
+  }
   
-  dbg_failf("syst: %d: PAUS not implemented\n", prog_id);
-  dbg_panic();
+  dbg_infof("syst: %d: set pause of %d to %d\n", prog_id, id, pause);
+  prog_arr[id - 1].pause = pause;
 }
 
 int syst_list(int id, char *name, size_t *size) {
@@ -241,7 +248,7 @@ int syst_open(const char *path) {
       
       if (!syst_files[i].buffer) {
         dbg_failf("syst: cannot allocate space for file: '%s'\n", path);
-        dbg_panic();
+        dbg_panic("cannot allocate file buffer");
       }
       
       fat_load_chain(part, syst_files[i].buffer, cluster);
@@ -260,7 +267,7 @@ void syst_clos(int id) {
   if (id <= 0 || id > SYST_OPEN_MAX) return;
   if (syst_files[id - 1].free) return;
   
-  page_free(syst_files[id - 1].buffer, (syst_files[id - 1].size + 0x01FF) >> 12);
+  page_free(syst_files[id - 1].buffer, (syst_files[id - 1].size + 0x0FFF) >> 12);
   syst_files[id - 1].free = 1;
 }
 
@@ -284,7 +291,7 @@ size_t syst_writ(int id, void *buffer, size_t size) {
   // TODO: implement WRIT
   
   dbg_failf("syst: %d: WRIT not implemented\n", prog_id);
-  dbg_panic();
+  dbg_panic("WRIT not implemented");
   
   return 0; // does nothing!
 }
@@ -334,14 +341,14 @@ void syst_size(int id, size_t size) {
   // TODO: implement SIZE
   
   dbg_failf("syst: %d: SIZE not implemented\n", prog_id);
-  dbg_panic();
-}
+  dbg_panic("SIZE not implemented");
+} 
 
 void syst_dele(const char *path) {
   // TODO: implement DELE
   
   dbg_failf("syst: %d: DELE not implemented\n", prog_id);
-  dbg_panic();
+  dbg_panic("DELE not implemented");
 }
 
 void *syst_phys(int id, void *addr) {
@@ -353,7 +360,7 @@ void *syst_phys(int id, void *addr) {
   return (void *)(((uint32_t)(addr) - VIRT_NOP_PROG) + (uint32_t)(prog_arr[id - 1].buffer));
 }
 
-int syst_hook(int id, void *func) {
+int syst_hook(int id) {
   idt_hand_t hand = (idt_hand_t){
     syst_call,
     (void *)(prog_id),
@@ -373,4 +380,9 @@ void syst_rele(int id) {
   
   if (!id) return;
   idt_remove((size_t)(id - 1));
+}
+
+void *syst_stac(int *length) {
+  *length = prog_len;
+  return prog_stk;
 }
